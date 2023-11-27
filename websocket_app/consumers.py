@@ -112,14 +112,14 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
 
-        if self.room_type=="support" and not url_for_send_message_on_support:
+        if self.room_type=="support" and url_for_send_message_on_support:
             # url=f"{backend_base_url}support/sent-message/"
             requests.post(url_for_send_message_on_support,
                           data={"text":text_data,
                                 "chat":self.room_pk},headers={
                     "Authorization":f"Token {self.token}"
                 })
-        elif self.room_type=="chat" and not url_for_send_message_on_chat:
+        elif self.room_type=="chat" and url_for_send_message_on_chat:
             requests.post(url_for_send_message_on_support,
                           data={"text":text_data,
                                 "chat":self.room_pk},headers={
