@@ -24,7 +24,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
         if self.room_type=="event":
             self.accept()
         elif self.room_type=="chat":
-            if not url_for_check_permission_on_chat:
+            if url_for_check_permission_on_chat:
                 url=f"{url_for_check_permission_on_chat}?pk={self.room_pk}"
                 try:
                     res=requests.get(url,headers={
@@ -62,7 +62,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
         elif self.room_type=="support":
         # Join room group
-            if not url_for_check_permission_on_support:
+            if url_for_check_permission_on_support:
                 url=f"{url_for_check_permission_on_support}?pk={self.room_pk}"
                 try:
                     res=requests.get(url,headers={
