@@ -22,17 +22,19 @@ class MessageConsumer(AsyncWebsocketConsumer):
         self.token = self.scope['url_route']['kwargs']['token']
         self.data={}
         if self.room_type=="event":
+            self.data={"sender":self.token}
             await self.channel_layer.group_add(
                     self.room_group_name,
                     self.channel_name
                 )
-            self.accept()
+            await self.accept()
             await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
+            
         elif self.room_type=="chat":
             if url_for_check_permission_on_chat:
                 url=f"{url_for_check_permission_on_chat}?pk={self.room_pk}"
@@ -68,16 +70,15 @@ class MessageConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     self.channel_name
                 )
+                await self.accept()
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
-                await self.accept()
 
         elif self.room_type=="support":
-        # Join room group
             if url_for_check_permission_on_support:
                 url=f"{url_for_check_permission_on_support}?pk={self.room_pk}"
                 try:
@@ -110,13 +111,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     self.channel_name
                 )
+                await self.accept()
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
-                await self.accept()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_send(
@@ -160,6 +161,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     async def connected_message(self, event):
         await self.send(text_data=json.dumps(event))
+        
 
     async def disconnected_message(self, event):
         await self.send(text_data=json.dumps(event))
