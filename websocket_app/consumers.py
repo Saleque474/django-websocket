@@ -122,7 +122,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_group_name,
             {"type":"disconnected_message",
-                "message":json.dumps(self.data),
+                "message":self.data,
                 }
         )
         await self.channel_layer.group_discard(
