@@ -26,13 +26,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
                     self.room_group_name,
                     self.channel_name
                 )
+            self.accept()
             await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
-            self.accept()
         elif self.room_type=="chat":
             if url_for_check_permission_on_chat:
                 url=f"{url_for_check_permission_on_chat}?pk={self.room_pk}"
