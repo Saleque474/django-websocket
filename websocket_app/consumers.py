@@ -22,6 +22,16 @@ class MessageConsumer(AsyncWebsocketConsumer):
         self.token = self.scope['url_route']['kwargs']['token']
         self.data={}
         if self.room_type=="event":
+            await self.channel_layer.group_add(
+                    self.room_group_name,
+                    self.channel_name
+                )
+            await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {"type":"connected_message",
+                        "data":self.data,
+                        }
+                )
             self.accept()
         elif self.room_type=="chat":
             if url_for_check_permission_on_chat:
@@ -50,15 +60,21 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 )
                 else:
                     await self.close()
+                
+                
             else:
-                await self.accept()
                 self.data={"id":self.token}
+                await self.channel_layer.group_add(
+                    self.room_group_name,
+                    self.channel_name
+                )
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
+                await self.accept()
 
         elif self.room_type=="support":
         # Join room group
@@ -89,14 +105,18 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 else:
                     await self.close()
             else:
-                await self.accept()
                 self.data={"id":self.token}
+                await self.channel_layer.group_add(
+                    self.room_group_name,
+                    self.channel_name
+                )
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {"type":"connected_message",
                         "data":self.data,
                         }
                 )
+                await self.accept()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_send(
@@ -111,7 +131,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-
         if self.room_type=="support" and url_for_send_message_on_support:
             # url=f"{backend_base_url}support/sent-message/"
             requests.post(url_for_send_message_on_support,
@@ -125,8 +144,8 @@ class MessageConsumer(AsyncWebsocketConsumer):
                                 "chat":self.room_pk},headers={
                     "Authorization":f"Token {self.token}"
                 })
-        elif self.room_type=="event":
-            pass    
+        # elif self.room_type=="event":
+        #     pass
         await self.channel_layer.group_send(
             self.room_group_name,
             {"type":"send_message",
@@ -134,6 +153,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 "data":self.data
                 }
         )
+
 
     async def send_message(self, event):
         await self.send(text_data=json.dumps(event))
